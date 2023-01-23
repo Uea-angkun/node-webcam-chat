@@ -1,33 +1,17 @@
-/*This is a Node.js server-side script that uses
- the Express and Socket.io libraries to create a real-time 
- WebRTC video chat application. */
-
-
- /**
- * These lines import the Express and uuid libraries, 
- * and create an instance of the Express application and an HTTP server.
- */
+//Node.js server-side ที่ใช้ Express , Socket ในการสร้างเว็บวิดิโอ เป็นการนำเข้า Express ,uuid ไลบรารี่ และสร้าง Express ,http
 const express = require("express");
 const app = express();
 const server = require("http").Server(app);
 const { v4: uuidv4 } = require("uuid");
 
-/**
- * This line imports the ExpressPeerServer module from the peer library, 
- * and the next line creates an options object with the debug property 
- * set to true.
- */
+//เป็นการนำ module ExpressPeerServer เข้าจาก peer และสร้างออบเจกต์ตัวเลือกที่มีคุณสมบัติการดีบัก
 const { ExpressPeerServer } = require("peer");
 const opinions = {
     debug: true,
 }
 
-/**
- * This line sets the view engine for the Express application to EJS, 
- * and the next line imports the Socket.io library 
- * and attaches it to the HTTP server. 
- * The cors property is used to allow connections from any origin.
- */
+//ตั้งค่าเอนจิ้นสำหรับแอปพลิเคชัน Express เป็น EJS จากนั้นนำ Socket แนบไปกับ HTTP server 
+//ตั้งค่า cors ใช้เพื่ออนุญาตการเชื่อมต่อจาก origin ไดก็ได้
 app.set("view engine", "ejs");
 const io = require("socket.io")(server, {
     cors: {
@@ -35,46 +19,24 @@ const io = require("socket.io")(server, {
     }
 });
 
-/**
- * These lines mount the ExpressPeerServer middleware on the /peerjs route 
- * and serve the contents of the public directory as static assets.
- */
 
+//ติดตั้ง มิดเดิลแวร์ ExpressPeerServer บน /peerjs และให้บริการเนื้อหาเป็นสาธารณะ
 app.use("/peerjs", ExpressPeerServer(server, opinions));
 app.use(express.static("public"));
 
-
-/**
- * This code creates a route for the root URL and 
- * redirects the user to a randomly generated room ID 
- * created by uuidv4()
- */
-
+//สร้างเส้นทางสำหรับ url root และเปลื่ยนเส้นทางไปยังไอดีห้องที่สุ่ม
 app.get("/", (req, res) => {
     res.redirect(`/${uuidv4()}`);
 });
 
-
-/**
- * This code creates a route for URLs with a room parameter 
- * and renders the room.ejs view with the roomId parameter passed in.
- */
-
+//สร้างเส้นทางสำหรับ url ที่กำหนด และสร้างห้องตาม roomID 
 app.get("/:room", (req, res) => {
     res.render("room", { roomId: req.params.room });
 });
 
-
-
-/**
- * This code listens for a "connection" event from the client, 
- * and when a client connects it listens for a "join-room" event 
- * and joins the room with a certain roomId. 
- * It also emits an event "user-connected" with a certain userId 
- * after 1 sec. It also listens for a "message" event, 
- * and when a message is received, 
- * it emits the message and the userName to all clients in the room.
- */
+// รอข้อมูลจากผู้ใช้ เมื่อผู้ใช้เชื่อมต่อก็จะรอการเข้าห้อง 
+// จากนั้นจะเข้าห้องด้วยรหัสห้องตาม roomID จากนั้นก็สั่งใช้งาน user-connected ตาม userId 
+//หลังจากนั้นรอรับข้อความ เมื่อได้รับข้อมความจะส่งข้อมความและชื่อผู้ใช้ไปยังห้อง
 io.on("connection", (socket) => {
     socket.on("join-room", (roomId, userId, userName) => {
         socket.join(roomId);
@@ -87,8 +49,6 @@ io.on("connection", (socket) => {
     });
 });
 
-/**This line starts the server and 
- * listens on the port specified in the 
- * PORT environment variable or port 3030 if it is not set. */
+// server รอรับข้อมูลตามพอร์ตที่ระบุ
 server.listen(process.env.PORT || 3030);
 
